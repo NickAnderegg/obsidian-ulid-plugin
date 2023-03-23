@@ -1,0 +1,10 @@
+{
+	"id": "obsidian-ulid-plugin",
+	"name": "ULID Manager",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "This is a plugin to manage ULID values in the frontmatter of Obsidian notes.",
+	"author": "Nick Anderegg",
+	"authorUrl": "https://n3a7.dev",
+	"isDesktopOnly": false
+}
