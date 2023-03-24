@@ -34,23 +34,53 @@ export default class ULIDManager extends Plugin {
         })
 
         this.registerEvent(this.app.vault.on("modify", async (file: TFile) => {
-            const ulidKey = this.settings.frontmatterUlidKey
-            const stat = await this.app.vault.adapter.stat(file.path)
-            const fileCreationTime = stat?.ctime
+            if(!this.settings.enableManager) {
+                // Don't do anything if we've disabled automatic management
+                return
+            }
 
-            if(this.settings.enableFillEmptyKey) {
-                this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-                    const ulidValue = frontmatter[ulidKey]
-                    if(ulidValue !== undefined && (ulidValue === "" || ulidValue == null || ulidValue === "null")) {
-                        if(this.settings.enableUseCreationTime && fileCreationTime !== undefined) {
-                            frontmatter[ulidKey] = ulid(fileCreationTime)
-                            console.log(frontmatter)
-                        } else {
-                            frontmatter[ulidKey] = ulid()
+            if(!this.settings.enableFillEmptyKey && !this.settings.enableConditionalKeyInsertion) {
+                // Don't do anything if all of our individual automatic insertion
+                // settings have been disabled
+                return
+            }
+
+            // The key we're going to use for storing the ULID
+            const ulidKey = this.settings.frontmatterUlidKey
+            // The variable holding our new ULID
+            let newUlid: string = ulid()
+
+            // Get the file's creation time if we want to use that for ULID timestamps
+            if (this.settings.enableUseCreationTime) {
+                const stat = await this.app.vault.adapter.stat(file.path)
+                const fileCreationTime = stat?.ctime
+
+                if(fileCreationTime !== undefined) {
+                    newUlid = ulid(fileCreationTime)
+                }
+            }
+
+            this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+                if(Object.keys(frontmatter).length == 0) {
+                    // If our note doesn't have any frontmatter, we want to bail out.
+                    return
+                }
+
+                const ulidValue = frontmatter[ulidKey]
+                if(ulidValue !== undefined) {
+                    if(ulidValue === "" || ulidValue == null || ulidValue === "null") {
+                        frontmatter[ulidKey] = newUlid
+                    }
+                } else {
+                    if(this.settings.enableConditionalKeyInsertion) {
+                        const conditionalKey = this.settings.frontmatterConditionalKey
+
+                        if(frontmatter[conditionalKey] !== undefined) {
+                            frontmatter[ulidKey] = newUlid
                         }
                     }
-                })
-            }
+                }
+            })
         }))
     }
 
