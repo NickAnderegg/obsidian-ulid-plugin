@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-ulid-plugin",
-	"version": "1.0.0",
+	"version": "1.1.1",
 	"description": "This is a plugin to manage ULID values in the frontmatter of Obsidian notes.",
 	"main": "main.js",
 	"scripts": {
