@@ -36,13 +36,13 @@ export default class ULIDManager extends Plugin {
         this.registerEvent(this.app.vault.on("modify", async (file: TFile) => {
             const ulidKey = this.settings.frontmatterUlidKey
             const stat = await this.app.vault.adapter.stat(file.path)
-            console.log(stat)
+            const fileCreationTime = stat?.ctime
 
             if(this.settings.enableFillEmptyKey) {
                 this.app.fileManager.processFrontMatter(file, (frontmatter) => {
                     const ulidValue = frontmatter[ulidKey]
                     if(ulidValue !== undefined && (ulidValue === "" || ulidValue == null || ulidValue === "null")) {
-                        if(this.settings.enableUseCreationTime) {
+                        if(this.settings.enableUseCreationTime && fileCreationTime !== undefined) {
                             frontmatter[ulidKey] = ulid(fileCreationTime)
                             console.log(frontmatter)
                         } else {
