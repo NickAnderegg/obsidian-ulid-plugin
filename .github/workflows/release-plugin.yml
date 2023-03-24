@@ -37,7 +37,7 @@ jobs:
     steps:
       - id: checkout-branch
         name: Checkout branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
@@ -68,7 +68,7 @@ jobs:
       # Save the build artifacts for this workflow run
       - id: store-build
         name: Store build artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.PLUGIN_SLUG }}
           path: ${{ env.PLUGIN_SLUG }}.zip
