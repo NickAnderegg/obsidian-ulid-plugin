@@ -57,12 +57,14 @@ jobs:
         name: Build plugin with npm
         run: npm run build
 
-      - id: tar-build-dir
+      - id: zip-build-dir
         name: Package plugin build directory
         run: |
-          mkdir ${{ env.PLUGIN_SLUG }}
-          cp main.js manifest.json ${{ env.PLUGIN_SLUG }}
-          tar -cvf ${GITHUB_WORKSPACE}/plugin-build.tar ${{ env.PLUGIN_SLUG }}
+          export PLUGIN_DIR=${GITHUB_WORKSPACE}/${{ env.PLUGIN_SLUG }}
+          mkdir ${PLUGIN_DIR}
+          cp main.js manifest.json ${PLUGIN_DIR}
+          cd ${PLUGIN_DIR}
+          tar -cvf ${GITHUB_WORKSPACE}/${{ env.PLUGIN_SLUG }}.tar .
           ls -lAh
 
       # Save the build artifacts for this workflow run
@@ -71,7 +73,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: plugin-build
-          path: plugin-build.tar
+          path: ${{ env.PLUGIN_SLUG }}.tar
 
   release-plugin:
     name: Release the plugin
@@ -91,15 +93,16 @@ jobs:
       - id: untar-build-dir
         name: Untar plugin build directory
         run: |
-          mkdir ${GITHUB_WORKSPACE}/release
-          cd ${GITHUB_WORKSPACE}/release
-          tar -xvf ${GITHUB_WORKSPACE}/plugin-build.tar
+          export PLUGIN_DIR=${GITHUB_WORKSPACE}/${{ env.PLUGIN_SLUG }}
+          mkdir ${PLUGIN_DIR}
+          cd ${PLUGIN_DIR}
+          tar -xvf ${PLUGIN_DIR}.tar
 
       - id: zip-release-dir
         name: Zip plugin release directory
         run: |
-          cd ${GITHUB_WORKSPACE}/release
-          zip -r ${GITHUB_WORKSPACE}/${{ env.PLUGIN_SLUG }}.zip
+          zip -r ${GITHUB_WORKSPACE}/${{ env.PLUGIN_SLUG }}.zip ${GITHUB_WORKSPACE}/${{ env.PLUGIN_SLUG }}
+          ls -lAh
 
       - id: create-release
         name: Create release
@@ -108,6 +111,7 @@ jobs:
         with:
           files: |
             ${{ env.PLUGIN_SLUG }}.zip
-            release/main.js
-            release/manifest.json
+            ${{ env.PLUGIN_SLUG }}/main.js
+            ${{ env.PLUGIN_SLUG }}/manifest.json
+
 
