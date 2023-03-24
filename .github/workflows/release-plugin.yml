@@ -30,7 +30,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-plugin:
     name: Build the plugin
     runs-on: ubuntu-latest
 
@@ -57,12 +57,12 @@ jobs:
         name: Build plugin with npm
         run: npm run build
 
-      - id: zip-build-dir
+      - id: tar-build-dir
         name: Package plugin build directory
         run: |
           mkdir ${{ env.PLUGIN_SLUG }}
           cp main.js manifest.json ${{ env.PLUGIN_SLUG }}
-          zip -r ${{ env.PLUGIN_SLUG }}.zip ${{ env.PLUGIN_SLUG }}
+          tar -cvf ${GITHUB_WORKSPACE}/plugin-build.tar ${{ env.PLUGIN_SLUG }}
           ls -lAh
 
       # Save the build artifacts for this workflow run
@@ -70,7 +70,44 @@ jobs:
         name: Store build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.PLUGIN_SLUG }}
-          path: ${{ env.PLUGIN_SLUG }}.zip
+          name: plugin-build
+          path: plugin-build.tar
 
+  release-plugin:
+    name: Release the plugin
+    runs-on: ubuntu-latest
+    needs: [build-plugin]
+    concurrency:
+      group: release-plugin-to-gh
+      cancel-in-progress: false
+
+    steps:
+      - id: download-build
+        name: Download plugin build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: plugin-build
+
+      - id: untar-build-dir
+        name: Untar plugin build directory
+        run: |
+          mkdir ${GITHUB_WORKSPACE}/release
+          cd ${GITHUB_WORKSPACE}/release
+          tar -xvf ${GITHUB_WORKSPACE}/plugin-build.tar
+
+      - id: zip-release-dir
+        name: Zip plugin release directory
+        run: |
+          cd ${GITHUB_WORKSPACE}/release
+          zip -r ${GITHUB_WORKSPACE}/${{ env.PLUGIN_SLUG }}.zip
+
+      - id: create-release
+        name: Create release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            ${{ env.PLUGIN_SLUG }}.zip
+            release/main.js
+            release/manifest.json
 
