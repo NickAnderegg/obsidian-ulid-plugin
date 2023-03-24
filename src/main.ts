@@ -112,7 +112,7 @@ class ULIDManagerSettingTab extends PluginSettingTab {
         containerEl.createEl('h2', { text: 'Frontmatter ULID Management' })
 
         new Setting(containerEl)
-            .setName('ULID Key')
+            .setName('ULID Field key')
             .setDesc('The key to manage for the ULID in the frontmatter of a note.')
             .addText(text => text
                 .setPlaceholder('Enter the key to manage')
@@ -124,7 +124,7 @@ class ULIDManagerSettingTab extends PluginSettingTab {
             )
 
         new Setting(containerEl)
-            .setName('Enable Empty Key Filling')
+            .setName('Empty Key Filling')
             .setDesc(
                 'When enabled, this plugin will automatically insert a ULID into the '+
                 'specified key of the frontmatter of a note when that note is modified. ' +
@@ -140,7 +140,7 @@ class ULIDManagerSettingTab extends PluginSettingTab {
             )
 
         new Setting(containerEl)
-            .setName('Enable Conditional Key Insertion')
+            .setName('Conditional Key Insertion')
             .setDesc(
                 'When enabled, the plugin will automatically insert a ULID at the "ULID Key" '+
                 'specified above when the key specified below is present in the frontmatter of a note '+
